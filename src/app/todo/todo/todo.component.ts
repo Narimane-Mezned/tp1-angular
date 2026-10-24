@@ -1,30 +1,51 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
-import { Todo } from '../model/todo';
-import { TodoService } from '../service/todo.service';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TodoStatus } from '../model/todo';
+import { TodoService } from '../service/todo.service';
+
+interface TodoColumn {
+  status: TodoStatus;
+  title: string;
+  cssClass: string;
+}
 
 @Component({
-    selector: 'app-todo',
-    templateUrl: './todo.component.html',
-    styleUrls: ['./todo.component.css'],
-    providers: [TodoService],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    imports: [FormsModule]
+  selector: 'app-todo',
+  templateUrl: './todo.component.html',
+  styleUrls: ['./todo.component.css'],
+  imports: [FormsModule],
 })
 export class TodoComponent {
-  private todoService = inject(TodoService);
+  private readonly todoService = inject(TodoService);
 
-  todos: Todo[] = [];
-  todo = new Todo();
-  constructor() {
-    this.todos = this.todoService.getTodos();
-  }
-  addTodo() {
-    this.todoService.addTodo(this.todo);
-    this.todo = new Todo();
+  protected readonly columns: TodoColumn[] = [
+    { status: 'waiting', title: 'Waiting', cssClass: 'alert-secondary' },
+    {
+      status: 'in progress',
+      title: 'In Progress Todos',
+      cssClass: 'alert-warning',
+    },
+    { status: 'done', title: 'Done Todos', cssClass: 'alert-success' },
+  ];
+
+  protected readonly todosByStatus = this.todoService.todosByStatus;
+  protected readonly name = signal('');
+  protected readonly content = signal('');
+  protected readonly canAdd = computed(
+    () => this.name().trim() !== '' && this.content().trim() !== '',
+  );
+
+  protected addTodo(): void {
+    this.todoService.addTodo(this.name().trim(), this.content().trim());
+    this.name.set('');
+    this.content.set('');
   }
 
-  deleteTodo(todo: Todo) {
-    this.todoService.deleteTodo(todo);
+  protected updateStatus(id: number, status: TodoStatus): void {
+    this.todoService.updateStatus(id, status);
+  }
+
+  protected deleteTodo(id: number): void {
+    this.todoService.deleteTodo(id);
   }
 }

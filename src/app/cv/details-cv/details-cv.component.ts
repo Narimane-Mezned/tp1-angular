@@ -20,7 +20,7 @@ export class DetailsCvComponent {
   private readonly router = inject(Router);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly toastr = inject(ToastrService);
-  readonly authService = inject(AuthService);
+  protected readonly isAuthenticated = inject(AuthService).isAuthenticated;
 
   protected readonly cv = toSignal(
     this.activatedRoute.params.pipe(

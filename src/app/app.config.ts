@@ -6,20 +6,19 @@ import {
 import { provideRouter } from '@angular/router';
 import {
   provideHttpClient,
-  withInterceptorsFromDi,
+  withInterceptors,
   withXhr,
 } from '@angular/common/http';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideToastr } from 'ngx-toastr';
 import { routes } from './app.routes';
-import { AuthInterceptorProvider } from './auth/interceptors/auth.interceptor';
+import { authInterceptor } from './auth/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection(),
     provideRouter(routes),
-    provideHttpClient(withXhr(), withInterceptorsFromDi()),
-    AuthInterceptorProvider,
+    provideHttpClient(withXhr(), withInterceptors([authInterceptor])),
     provideToastr(),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
